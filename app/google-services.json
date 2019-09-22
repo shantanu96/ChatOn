@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "957229211681",
+    "firebase_url": "https://chaton-bb63b.firebaseio.com",
+    "project_id": "chaton-bb63b",
+    "storage_bucket": "chaton-bb63b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957229211681:android:254b34e50323a4693fc360",
+        "android_client_info": {
+          "package_name": "dev.shantanu.com.chaton"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957229211681-5jlaoktdq88e3p5hecq89sfpd9kfglh6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.shantanu.com.chaton",
+            "certificate_hash": "67d255a63f02f7425cdfc0eddeb2dbe7c69e9665"
+          }
+        },
+        {
+          "client_id": "957229211681-inm1cms2a5a9padhjtb3701so67egg6e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_y7U6MQSjMZvbTlcl5yYgU2wDmw2CkxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957229211681-inm1cms2a5a9padhjtb3701so67egg6e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
