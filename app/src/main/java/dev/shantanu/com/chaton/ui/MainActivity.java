@@ -2,7 +2,9 @@ package dev.shantanu.com.chaton.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,15 +13,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.Conversation;
+import dev.shantanu.com.chaton.data.entities.User;
 import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
 
 public class MainActivity extends AppCompatActivity implements ChatListAdapter.ChatListItemListener {
+
+    private final String TAG = getClass().getSimpleName();
 
     private RecyclerView rvChatList;
     private DatabaseHelper databaseHelper;
@@ -61,12 +67,27 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
     }
 
     @Override
-    public void onClick(int pos) {
-//        User user = conversationList.get(pos);
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("user", (Serializable) user);
-//        Intent intent = new Intent(this, ConversationActivity.class);
-//        intent.putExtra("bundle", bundle);
-//        startActivity(intent);
+    public void onClick(int pos, String recieverUserId) {
+        GetUserTask gt = new GetUserTask();
+        gt.execute(recieverUserId);
+    }
+
+    private class GetUserTask extends AsyncTask<String, Integer, User> {
+
+        @Override
+        protected User doInBackground(String... ids) {
+            User user = databaseHelper.getUser(ids[0]);
+            Log.d(TAG, "doInBackground: ");
+            return user;
+        }
+
+        @Override
+        protected void onPostExecute(User user) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("user", (Serializable) user);
+            Intent intent = new Intent(MainActivity.this, ConversationActivity.class);
+            intent.putExtra("bundle", bundle);
+            startActivity(intent);
+        }
     }
 }
