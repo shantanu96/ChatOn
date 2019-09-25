@@ -1,14 +1,23 @@
 package dev.shantanu.com.chaton.data.entities;
 
 
-public class Message {
+import com.google.firebase.firestore.Exclude;
+import com.stfalcon.chatkit.commons.models.IMessage;
 
-    private String  id;
-    private String author;
-    private String body;
+import java.io.Serializable;
+import java.util.Date;
+
+public class Message implements IMessage, Serializable {
+
+    private String id;
+    private String text;
     private String conversationId;
-    private String timeCreated;
+    String author;
+    private Date createdAt;
+    @Exclude
+    private User user;
 
+    @Override
     public String getId() {
         return id;
     }
@@ -17,28 +26,13 @@ public class Message {
         this.id = id;
     }
 
-    public String getAuthor() {
-        return author;
+    @Override
+    public String getText() {
+        return text;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
-
-    public String getTimeCreated() {
-        return timeCreated;
-    }
-
-    public void setTimeCreated(String timeCreated) {
-        this.timeCreated = timeCreated;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getConversationId() {
@@ -47,5 +41,33 @@ public class Message {
 
     public void setConversationId(String conversationId) {
         this.conversationId = conversationId;
+    }
+
+    @Override
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @Override
+    @Exclude
+    public User getUser() {
+        return user;
+    }
+
+    @Exclude
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }

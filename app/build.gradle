@@ -30,6 +30,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.github.stfalcon:chatkit:0.3.3'
-    implementation 'com.github.timigod:android-chat-ui:v0.1.4'
-    implementation "com.xwray:groupie:2.5.1"
+    implementation 'com.google.android.material:material:1.1.0-alpha02'
+
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

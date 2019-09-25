@@ -50,7 +50,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
                 userId = id;
         }
         holder.userName.setText(mDataset.get(position).getParticipants().get(userId));
-        holder.setRecieverUserId(userId);
+        holder.setReceiverUserId(userId);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -60,7 +60,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
     }
 
     public interface ChatListItemListener {
-        public void onClick(int pos,String recieverUserId);
+        public void onClick(int pos,String receiverUserId);
     }
 
     // Provide a reference to the views for each data item
@@ -69,7 +69,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
     public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         public TextView userName;
-        private String recieverUserId;
+        private String receiverUserId;
 
         public MyViewHolder(View v) {
             super(v);
@@ -84,17 +84,17 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
             this.userName = userName;
         }
 
-        public String getRecieverUserId() {
-            return recieverUserId;
+        public String getReceiverUserId() {
+            return receiverUserId;
         }
 
-        public void setRecieverUserId(String recieverUserId) {
-            this.recieverUserId = recieverUserId;
+        public void setReceiverUserId(String receiverUserId) {
+            this.receiverUserId = receiverUserId;
         }
 
         @Override
         public void onClick(View v) {
-            chatListItemListener.onClick(getAdapterPosition(),recieverUserId);
+            chatListItemListener.onClick(getAdapterPosition(),receiverUserId);
         }
     }
 }

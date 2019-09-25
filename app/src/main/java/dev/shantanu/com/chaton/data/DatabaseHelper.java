@@ -148,26 +148,14 @@ public class DatabaseHelper {
                 });
     }
 
-    public User getUser(final String id) {
-        final User user = new User();
-        db.collection("users").document(id)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            user.setId(id);
-                            user.setEmailId((String) document.get("emailId"));
-                            user.setFirstName((String) document.get("firstName"));
-                            user.setLastName((String) document.get("lastName"));
-//                            user.setCoverssataionIds((List<String>) document.get("conversationIds"));
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
+    public Task<QuerySnapshot> getConversationId(Conversation conversation){
+        return db.collection("conversations")
+                .whereEqualTo("participants",conversation.getParticipants()).get();
+    }
 
-        return user;
+    public Task<DocumentSnapshot> getUser(final String id) {
+        final User user = new User();
+        return db.collection("users").document(id)
+                .get();
     }
 }

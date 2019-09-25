@@ -5,10 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.ConversationActivity">
-    <co.intentservice.chatui.ChatView
-        android:id="@+id/chat_view"
+    <com.stfalcon.chatkit.messages.MessagesList
+        android:id="@+id/messagesList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-    />
+        android:layout_above="@+id/msgInput" />
 
+    <com.stfalcon.chatkit.messages.MessageInput
+        android:id="@+id/msgInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:inputHint="@string/hint_enter_a_message"/>
 </RelativeLayout>

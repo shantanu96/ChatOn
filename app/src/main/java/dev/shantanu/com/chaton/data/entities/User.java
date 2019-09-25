@@ -1,9 +1,11 @@
 package dev.shantanu.com.chaton.data.entities;
 
+import com.stfalcon.chatkit.commons.models.IUser;
+
 import java.io.Serializable;
 import java.util.List;
 
-public class User implements Serializable {
+public class User implements Serializable, IUser {
     private String id;
     private String firstName;
     private String lastName;
@@ -12,6 +14,16 @@ public class User implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getName() {
+        return getFirstName()+" "+getLastName();
+    }
+
+    @Override
+    public String getAvatar() {
+        return null;
     }
 
     public void setId(String id) {
