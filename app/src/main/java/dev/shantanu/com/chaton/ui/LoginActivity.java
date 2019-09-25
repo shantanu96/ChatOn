@@ -25,8 +25,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 
 import dev.shantanu.com.chaton.R;
+import dev.shantanu.com.chaton.data.DatabaseHelper;
+import dev.shantanu.com.chaton.data.entities.User;
+import dev.shantanu.com.chaton.uitls.Util;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -39,11 +46,14 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private SignInButton btnGoogleSignIn;
 
+    private DatabaseHelper databaseHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
+        databaseHelper = new DatabaseHelper(getApplicationContext());
 
         etEmail = findViewById(R.id.et_login_email);
         etPassword = findViewById(R.id.et_login_pass);
@@ -148,10 +158,44 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    public void goToHomeActivity(FirebaseUser user) {
-        if (user != null) {
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
+    public void goToHomeActivity(FirebaseUser fbUser) {
+        if (fbUser != null) {
+            final User user = new User();
+            user.setFirstName(fbUser.getDisplayName());
+            user.setEmailId(fbUser.getEmail());
+            user.setConversationIds(new ArrayList<String>());
+
+            databaseHelper.checkIfUserExists(user.getEmailId())
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.getResult().size() == 0) {
+                                databaseHelper.addUser(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Util.saveUserInfoInSession(getApplicationContext(), user);
+                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                });
+                            } else {
+                                databaseHelper.getUserByEmailId(user.getEmailId())
+                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                                    user.setId((String) document.getId());
+                                                }
+                                                Util.saveUserInfoInSession(getApplicationContext(), user);
+                                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        });
+                            }
+                        }
+                    });
+
+
         }
     }
 }

@@ -1,7 +1,6 @@
 package dev.shantanu.com.chaton.ui;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,12 +25,14 @@ import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.Conversation;
 import dev.shantanu.com.chaton.data.entities.User;
 import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
+import dev.shantanu.com.chaton.uitls.Util;
 
 public class MainActivity extends AppCompatActivity implements ChatListAdapter.ChatListItemListener {
 
     private final String TAG = getClass().getSimpleName();
 
     private RecyclerView rvChatList;
+    private ChatListAdapter chatListAdapter;
     private DatabaseHelper databaseHelper;
     private List<Conversation> conversationList;
     private FloatingActionButton floatingActionButton;
@@ -45,29 +46,14 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
 
         floatingActionButton = findViewById(R.id.floatingActionButton);
 
-        //Temp logic to store current user
-        User user = new User();
-        user.setId("oLoTWwZoxtPUXGhlO95z");
-        user.setFirstName("Shantanu");
-        user.setLastName("Bhosale");
-        gson = new Gson();
-        String json = gson.toJson(user);
-
-        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("MyPref", 0);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("userId", "oLoTWwZoxtPUXGhlO95z");
-
-        editor.putString("User", json);
-        editor.commit();
-
         databaseHelper = new DatabaseHelper(this);
 
         rvChatList = findViewById(R.id.rv_chat_list);
 
         conversationList = new ArrayList<>();
         //send logged in userid to find other participant id in hashmap(improve the logic)
-        ChatListAdapter chatListAdapter = new ChatListAdapter(conversationList, this,
-                getApplicationContext().getSharedPreferences("MyPref", 0).getString("userId", ""));
+        chatListAdapter = new ChatListAdapter(conversationList, this,
+                Util.getUserInfoFromSession(getApplicationContext()).getId());
         databaseHelper.getAllConversations(conversationList, chatListAdapter);
 
         rvChatList.setLayoutManager(new LinearLayoutManager(this));
@@ -80,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        databaseHelper.getAllConversations(conversationList, chatListAdapter);
     }
 
     @Override

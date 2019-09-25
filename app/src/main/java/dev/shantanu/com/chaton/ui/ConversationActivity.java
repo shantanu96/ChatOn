@@ -24,6 +24,7 @@ import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.Conversation;
 import dev.shantanu.com.chaton.data.entities.Message;
 import dev.shantanu.com.chaton.data.entities.User;
+import dev.shantanu.com.chaton.uitls.Util;
 
 public class ConversationActivity extends AppCompatActivity implements MessageInput.InputListener {
 
@@ -47,27 +48,23 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         gson = new Gson();
 
         otherUser = (User) getIntent().getBundleExtra("bundle").getSerializable("user");
-        currentUser = (User) gson.fromJson(
-                getSharedPreferences("MyPref", 0).getString("User", "")
-                , User.class);
+        currentUser = Util.getUserInfoFromSession(getApplicationContext());
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(otherUser.getFirstName() + " " + otherUser.getLastName());
 
-        final String userId = getApplicationContext().getSharedPreferences("MyPref", 0).getString("userId", "");
-
         messageList = findViewById(R.id.messagesList);
         messageInput = findViewById(R.id.msgInput);
-        adapter = new MessagesListAdapter<>(userId, null);
+        adapter = new MessagesListAdapter<>(Util.getUserInfoFromSession(getApplicationContext()).getId(), null);
         messageList.setAdapter(adapter);
 
         HashMap<String, String> particpants = new HashMap();
-        particpants.put(userId, "Shantanu Bhosale");
+        particpants.put(currentUser.getId(), currentUser.getFirstName() + " " + currentUser.getLastName());
         particpants.put(otherUser.getId(), otherUser.getFirstName() + " " + otherUser.getLastName());
 
         conversation = new Conversation();
         conversation.setParticipants(particpants);
         conversation.setCreatedTime(new Timestamp(new Date()));
-        databaseHelper.checkConversationExists(conversation, userId);//checks if conversation exits otherwise add the conversation
+        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId());//checks if conversation exits otherwise add the conversation
 
         messageInput.setInputListener(this);
     }

@@ -10,24 +10,24 @@ public class User implements Serializable, IUser {
     private String firstName;
     private String lastName;
     private String emailId;
-    private List<String> coverssataionIds;
+    private List<String> conversationIds;
 
     public String getId() {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @Override
     public String getName() {
-        return getFirstName()+" "+getLastName();
+        return getFirstName() + " " + getLastName();
     }
 
     @Override
     public String getAvatar() {
         return null;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getFirstName() {
@@ -54,11 +54,11 @@ public class User implements Serializable, IUser {
         this.emailId = emailId;
     }
 
-    public List<String> getCoverssataionIds() {
-        return coverssataionIds;
+    public List<String> getConversationIds() {
+        return conversationIds;
     }
 
-    public void setCoverssataionIds(List<String> coverssataionIds) {
-        this.coverssataionIds = coverssataionIds;
+    public void setConversationIds(List<String> conversationIds) {
+        this.conversationIds = conversationIds;
     }
 }
