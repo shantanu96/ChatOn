@@ -3,6 +3,7 @@ package dev.shantanu.com.chaton.uitls;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 
 import dev.shantanu.com.chaton.data.entities.User;
@@ -33,5 +34,9 @@ public class Util {
 
     public static void clearPreferneces(Context context) {
         getSharedPreferenceEditor(context).clear().commit();
+    }
+
+    public static void logout() {
+        FirebaseAuth.getInstance().signOut();
     }
 }

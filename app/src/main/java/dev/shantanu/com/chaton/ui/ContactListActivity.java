@@ -1,11 +1,11 @@
 package dev.shantanu.com.chaton.ui;
 
+import android.content.Intent;
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.os.Bundle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,7 +14,6 @@ import java.util.List;
 import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.User;
-import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
 import dev.shantanu.com.chaton.ui.adapters.ContactListAdapter;
 
 public class ContactListActivity extends AppCompatActivity implements ContactListAdapter.ContactListItemListener {
@@ -22,10 +21,13 @@ public class ContactListActivity extends AppCompatActivity implements ContactLis
     private RecyclerView rvContactList;
     private DatabaseHelper databaseHelper;
     private List<User> userList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
+
+        getSupportActionBar().setTitle("Contacts");
 
         rvContactList = findViewById(R.id.rv_contact_list);
 

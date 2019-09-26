@@ -175,6 +175,7 @@ public class LoginActivity extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<Void> task) {
                                         Util.saveUserInfoInSession(getApplicationContext(), user);
                                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         startActivity(intent);
                                     }
                                 });
@@ -188,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 }
                                                 Util.saveUserInfoInSession(getApplicationContext(), user);
                                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                 startActivity(intent);
                                             }
                                         });

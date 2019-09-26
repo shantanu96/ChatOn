@@ -2,7 +2,6 @@ package dev.shantanu.com.chaton.data;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -101,7 +100,7 @@ public class DatabaseHelper {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(mContext, "Message sent", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "onSuccess: Message Sent successfully");
                     }
                 });
     }
@@ -115,7 +114,7 @@ public class DatabaseHelper {
                     public void onSuccess(Void aVoid) {
                         db.collection("users").document(userId)
                                 .update("conversationIds", FieldValue.arrayUnion(conversationId));
-                        Toast.makeText(mContext, "Convo added", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "onSuccess: Conversation added successfully");
                     }
                 });
 
@@ -129,31 +128,9 @@ public class DatabaseHelper {
     }
 
 
-    public void checkConversationExists(final Conversation conversation, final String userId) {
-        db.collection("conversations")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        boolean conversationExists = false;
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                HashMap<String, String> participants = (HashMap<String, String>) document.get("participants");
-                                if (participants != null && participants.equals(conversation.getParticipants())) {
-                                    conversationExists = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-
-                        //add conversation if does not exist
-                        if (!conversationExists) {
-                            addConversation(conversation, userId);
-                        }
-                    }
-                });
+    public Task<QuerySnapshot> checkConversationExists(final Conversation conversation, final String userId) {
+        return db.collection("conversations")
+                .get();
     }
 
     //Every user has unique email id
@@ -174,5 +151,9 @@ public class DatabaseHelper {
 
     public Task<QuerySnapshot> getUserByEmailId(String emailId) {
         return db.collection("users").whereEqualTo("emailId", emailId).get();
+    }
+
+    public Task<QuerySnapshot> getMessagesByConversationId(String conversationId) {
+        return db.collection("messages").whereEqualTo("conversationId", conversationId).get();
     }
 }
