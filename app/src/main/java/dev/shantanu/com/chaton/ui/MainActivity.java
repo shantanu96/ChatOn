@@ -89,8 +89,7 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
                     User user = new User();
                     user.setId(receiverUserId);
                     user.setEmailId((String) document.get("emailId"));
-                    user.setFirstName((String) document.get("firstName"));
-                    user.setLastName((String) document.get("lastName"));
+                    user.setUserName((String) document.get("userName"));
 
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("user", (Serializable) user);
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
         int id = item.getItemId();
         if (id == R.id.btn_logout) {
             Util.clearPreferneces(getApplicationContext());
-            Util.logout();
+            Util.logout(getApplicationContext());
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);

@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -39,12 +40,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 123;
     private final String TAG = getClass().getSimpleName();
-    private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
-
+    private FirebaseAuth mAuth;
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private SignInButton btnGoogleSignIn;
+    private TextView registerLink;
 
     private DatabaseHelper databaseHelper;
 
@@ -59,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_login_pass);
         btnLogin = findViewById(R.id.btn_login);
         btnGoogleSignIn = findViewById(R.id.google_sign_in_button);
+        registerLink = findViewById(R.id.link_register);
 
         //email and pass sign in
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +82,15 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 signInWithGoogle();
+            }
+        });
+
+        registerLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         });
     }
@@ -161,7 +172,7 @@ public class LoginActivity extends AppCompatActivity {
     public void goToHomeActivity(FirebaseUser fbUser) {
         if (fbUser != null) {
             final User user = new User();
-            user.setFirstName(fbUser.getDisplayName());
+            user.setUserName(fbUser.getDisplayName());
             user.setEmailId(fbUser.getEmail());
             user.setConversationIds(new ArrayList<String>());
 
@@ -177,6 +188,7 @@ public class LoginActivity extends AppCompatActivity {
                                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         startActivity(intent);
+                                        finish();
                                     }
                                 });
                             } else {
@@ -191,6 +203,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                 startActivity(intent);
+                                                finish();
                                             }
                                         });
                             }

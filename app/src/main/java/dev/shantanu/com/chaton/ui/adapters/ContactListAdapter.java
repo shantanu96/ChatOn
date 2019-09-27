@@ -40,7 +40,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     public void onBindViewHolder(MyViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.userName.setText(mDataset.get(position).getFirstName());
+        holder.userName.setText(mDataset.get(position).getUserName());
 
     }
 

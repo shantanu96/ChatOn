@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
+    android:id="@+id/activity_register"
     android:layout_height="match_parent">
     <TextView
         android:id="@+id/loginscrn"
@@ -17,9 +18,9 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="100dp"
         android:layout_marginTop="20dp"
-        android:text="Full Name"/>
+        android:text="User Name"/>
     <EditText
-        android:id="@+id/et_register_full_name"
+        android:id="@+id/et_register_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="100dp"
@@ -60,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:text="Already Registered? Login here"
+        android:text="Login here"
         android:gravity="center"
         android:textSize="20dp"
         android:textColor="#3F51B5"

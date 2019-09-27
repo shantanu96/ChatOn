@@ -1,5 +1,6 @@
 package dev.shantanu.com.chaton.data.entities;
 
+import com.google.firebase.firestore.Exclude;
 import com.stfalcon.chatkit.commons.models.IUser;
 
 import java.io.Serializable;
@@ -7,10 +8,10 @@ import java.util.List;
 
 public class User implements Serializable, IUser {
     private String id;
-    private String firstName;
-    private String lastName;
+    private String userName;
     private String emailId;
     private List<String> conversationIds;
+    private String password;
 
     public String getId() {
         return id;
@@ -20,9 +21,10 @@ public class User implements Serializable, IUser {
         this.id = id;
     }
 
+    @Exclude
     @Override
     public String getName() {
-        return getFirstName() + " " + getLastName();
+        return getUserName();
     }
 
     @Override
@@ -30,21 +32,6 @@ public class User implements Serializable, IUser {
         return null;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
 
     public String getEmailId() {
         return emailId;
@@ -60,5 +47,21 @@ public class User implements Serializable, IUser {
 
     public void setConversationIds(List<String> conversationIds) {
         this.conversationIds = conversationIds;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

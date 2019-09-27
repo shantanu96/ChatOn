@@ -3,9 +3,13 @@ package dev.shantanu.com.chaton.uitls;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 
+import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.entities.User;
 
 public class Util {
@@ -36,7 +40,13 @@ public class Util {
         getSharedPreferenceEditor(context).clear().commit();
     }
 
-    public static void logout() {
+    public static void logout(Context context) {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(context.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        GoogleSignInClient client = GoogleSignIn.getClient(context, gso);
+        client.signOut();
         FirebaseAuth.getInstance().signOut();
     }
 }

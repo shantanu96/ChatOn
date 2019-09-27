@@ -11,6 +11,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -49,8 +50,7 @@ public class DatabaseHelper {
                                     continue;
                                 User user = new User();
                                 user.setId(document.getId());
-                                user.setFirstName((String) document.get("firstName"));
-                                user.setLastName((String) document.get("lastName"));
+                                user.setUserName((String) document.get("userName"));
                                 user.setEmailId((String) document.get("emailId"));
                                 userList.add(user);
                             }
@@ -124,7 +124,7 @@ public class DatabaseHelper {
     public Task<Void> addUser(User user) {
         String userId = db.collection("users").document().getId();
         user.setId(userId);
-        return db.collection("users").document().set(user);
+        return db.collection("users").document(userId).set(user);
     }
 
 
@@ -154,6 +154,8 @@ public class DatabaseHelper {
     }
 
     public Task<QuerySnapshot> getMessagesByConversationId(String conversationId) {
-        return db.collection("messages").whereEqualTo("conversationId", conversationId).get();
+        return db.collection("messages").orderBy("createdAt", Query.Direction.ASCENDING)
+                .whereEqualTo("conversationId", conversationId)
+                .get();
     }
 }

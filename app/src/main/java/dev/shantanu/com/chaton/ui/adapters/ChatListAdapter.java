@@ -75,15 +75,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.MyView
             super(v);
             userName = v.findViewById(R.id.tv_chat_list_user_name);
         }
-
-        public TextView getUserName() {
-            return userName;
-        }
-
-        public void setUserName(TextView userName) {
-            this.userName = userName;
-        }
-
         public String getReceiverUserId() {
             return receiverUserId;
         }

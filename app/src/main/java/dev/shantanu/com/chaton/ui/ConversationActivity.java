@@ -54,7 +54,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         currentUser = Util.getUserInfoFromSession(getApplicationContext());
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle(otherUser.getFirstName() + " " + otherUser.getLastName());
+        actionBar.setTitle(otherUser.getUserName());
 
         messageList = findViewById(R.id.messagesList);
         messageInput = findViewById(R.id.msgInput);
@@ -62,8 +62,8 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         messageList.setAdapter(adapter);
 
         HashMap<String, String> particpants = new HashMap();
-        particpants.put(currentUser.getId(), currentUser.getFirstName() + " " + currentUser.getLastName());
-        particpants.put(otherUser.getId(), otherUser.getFirstName() + " " + otherUser.getLastName());
+        particpants.put(currentUser.getId(), currentUser.getUserName());
+        particpants.put(otherUser.getId(), otherUser.getUserName());
 
         conversation = new Conversation();
         conversation.setParticipants(particpants);
@@ -145,7 +145,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
 
                             messageList.add(message);
                         }
-                        adapter.addToEnd(messageList, false);
+                        adapter.addToEnd(messageList, true);
                     }
                 });
     }
