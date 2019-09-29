@@ -174,7 +174,6 @@ public class LoginActivity extends AppCompatActivity {
             final User user = new User();
             user.setUserName(fbUser.getDisplayName());
             user.setEmailId(fbUser.getEmail());
-            user.setConversationIds(new ArrayList<String>());
 
             databaseHelper.checkIfUserExists(user.getEmailId())
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

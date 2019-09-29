@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
@@ -19,7 +18,6 @@ import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import dev.shantanu.com.chaton.R;
@@ -50,7 +48,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         databaseHelper = new DatabaseHelper(getApplicationContext());
         gson = new Gson();
 
-        otherUser = (User) getIntent().getBundleExtra("bundle").getSerializable("user");
+        otherUser = (User) getIntent().getBundleExtra("bundle").getSerializable("otherUser");
         currentUser = Util.getUserInfoFromSession(getApplicationContext());
 
         ActionBar actionBar = getSupportActionBar();
@@ -65,16 +63,11 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         List<User> userList = new ArrayList<>();
         userList.add(currentUser);
         userList.add(otherUser);
-        Message message = new Message();
-        message.setText("");
-        message.setAuthor("");
-        message.setCreatedAt(new Date());
+
         conversation = new Conversation();
         conversation.setDialogName(otherUser.getName());
-        conversation.setDialogPhoto("");
         conversation.setUsers(userList);
         conversation.setCreatedAt(new Date());
-        conversation.setLstMsg(message);
 
 
         //checks if conversation exits otherwise add the conversation
@@ -89,6 +82,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                             if (conversation.getUsers().get(0).getId().equals(conve.getUsers().get(0).getId())
                                     && conversation.getUsers().get(1).getId().equals(conve.getUsers().get(1).getId())
                             ) {
+                                conversation.setId(conve.getId());
                                 conversationExists = true;
                                 break;
                             }
@@ -109,24 +103,29 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
     @Override
     public boolean onSubmit(final CharSequence input) {
 
-//        databaseHelper.getConversationId(conversation)
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        String conversationId = "";
-//                        for (QueryDocumentSnapshot document : task.getResult()) {
-//                            conversationId = document.getId();
-//                        }
-//                        Message message = new Message();
-//                        message.setConversationId(conversationId);
-//                        message.setAuthor(currentUser.getId());
-//                        message.setText(input.toString());
-//                        message.setCreatedAt(new Date());
-//                        message.setUser(currentUser);
-//                        adapter.addToStart(message, false);
-//                        databaseHelper.addMessage(message);
-//                    }
-//                });
+        final Message message = new Message();
+        message.setConversationId(conversation.getId());
+        message.setAuthor(currentUser.getId());
+        message.setText(input.toString());
+        message.setCreatedAt(new Date());
+        message.setUser(currentUser);
+        adapter.addToStart(message, false);
+        databaseHelper.addMessage(message)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+//                        databaseHelper.addLastMessageToConversation(message, conversation.getId())
+//                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                    @Override
+//                                    public void onComplete(@NonNull Task<Void> task) {
+//                                        Log.d(TAG, "onComplete: Message added and conversation last message added successfully");
+//                                    }
+//                                });
+                        Log.d(TAG, "onComplete: Message added successfully");
+                    }
+                });
+
+
         return true;
     }
 

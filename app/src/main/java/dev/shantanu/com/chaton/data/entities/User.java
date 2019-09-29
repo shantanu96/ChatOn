@@ -10,8 +10,8 @@ public class User implements Serializable, IUser {
     private String id;
     private String userName;
     private String emailId;
-    private List<String> conversationIds;
     private String password;
+    private String avatar;
 
     public String getId() {
         return id;
@@ -29,9 +29,12 @@ public class User implements Serializable, IUser {
 
     @Override
     public String getAvatar() {
-        return null;
+        return avatar;
     }
 
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     public String getEmailId() {
         return emailId;
@@ -39,14 +42,6 @@ public class User implements Serializable, IUser {
 
     public void setEmailId(String emailId) {
         this.emailId = emailId;
-    }
-
-    public List<String> getConversationIds() {
-        return conversationIds;
-    }
-
-    public void setConversationIds(List<String> conversationIds) {
-        this.conversationIds = conversationIds;
     }
 
     public String getUserName() {

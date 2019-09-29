@@ -6,22 +6,18 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.HashMap;
 import java.util.List;
 
 import dev.shantanu.com.chaton.data.entities.Conversation;
 import dev.shantanu.com.chaton.data.entities.Message;
 import dev.shantanu.com.chaton.data.entities.User;
-import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
 import dev.shantanu.com.chaton.ui.adapters.ContactListAdapter;
 import dev.shantanu.com.chaton.uitls.Util;
 
@@ -71,15 +67,15 @@ public class DatabaseHelper {
     }
 
 
-    public void addMessage(Message message) {
-        db.collection("messages").document()
-                .set(message)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: Message Sent successfully");
-                    }
-                });
+    public Task<Void> addMessage(Message message) {
+        return db.collection("messages").document()
+                .set(message);
+    }
+
+    public Task<Void> addLastMessageToConversation(Message message, String conversationId) {
+        return db.collection("conversations").document(conversationId)
+                .update("lstMsg", message);
+
     }
 
     public Task<Void> addUser(User user) {
@@ -112,6 +108,7 @@ public class DatabaseHelper {
     //Conversation methods
     public void addConversation(Conversation conversation) {
         final String conversationId = db.collection("conversations").document().getId();
+        conversation.setId(conversationId);
         db.collection("conversations").document(conversationId)
                 .set(conversation);
     }

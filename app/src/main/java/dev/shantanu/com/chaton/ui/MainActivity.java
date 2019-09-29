@@ -2,7 +2,6 @@ package dev.shantanu.com.chaton.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,18 +10,16 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
+import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.dialogs.DialogsList;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 
@@ -34,12 +31,12 @@ import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.Conversation;
 import dev.shantanu.com.chaton.data.entities.User;
-import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
 import dev.shantanu.com.chaton.uitls.Util;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogsListAdapter.OnDialogClickListener {
 
     private final String TAG = getClass().getSimpleName();
+    private final String DEFAULT_PROFILE_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/chaton-bb63b.appspot.com/o/default_profile_img.png?alt=media&token=bdd3d4cd-5885-409f-9ccb-4642bcd5bb58";
 
 
     private DatabaseHelper databaseHelper;
@@ -62,9 +59,15 @@ public class MainActivity extends AppCompatActivity {
         dialogsListAdapter = new DialogsListAdapter(new ImageLoader() {
             @Override
             public void loadImage(ImageView imageView, @Nullable String url, @Nullable Object payload) {
-//                Picasso.with(getApplicationContext()).load(url).into(imageView);
+                if (url == null || url.isEmpty()) {
+                    Picasso.get().load(DEFAULT_PROFILE_IMAGE_URL).into(imageView);
+                } else {
+                    Picasso.get().load(url).into(imageView);
+                }
+
             }
         });
+        dialogsListAdapter.setOnDialogClickListener(this);
 
         dialogsList.setAdapter(dialogsListAdapter);
 
@@ -78,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        loadConversations();
     }
 
     @Override
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadConversations() {
+        dialogsListAdapter.clear();
         databaseHelper.getAllConversations()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -120,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
                             if (task.getResult().size() != 0) {
                                 Conversation conversation = document.toObject(Conversation.class);
-
                                 User otherUser = conversation.getUsers().get(0).getId().equals(currentUserId) ?
                                         (User) conversation.getUsers().get(1) : (User) conversation.getUsers().get(0);
 
@@ -136,5 +137,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onDialogClick(IDialog dialog) {
+        Conversation conversation = (Conversation) dialog;
+        String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
+        User otherUser = conversation.getUsers().get(0).getId().equals(currentUserId) ?
+                (User) conversation.getUsers().get(1) : (User) conversation.getUsers().get(0);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("otherUser", (Serializable) otherUser);
+        Intent intent = new Intent(this, ConversationActivity.class);
+        intent.putExtra("bundle", bundle);
+        startActivity(intent);
     }
 }

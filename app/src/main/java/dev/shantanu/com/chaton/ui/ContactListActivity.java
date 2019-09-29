@@ -45,7 +45,7 @@ public class ContactListActivity extends AppCompatActivity implements ContactLis
     public void onClick(int pos) {
         User user = userList.get(pos);
         Bundle bundle = new Bundle();
-        bundle.putSerializable("user", (Serializable) user);
+        bundle.putSerializable("otherUser", (Serializable) user);
         Intent intent = new Intent(this, ConversationActivity.class);
         intent.putExtra("bundle", bundle);
         startActivity(intent);
