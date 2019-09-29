@@ -12,6 +12,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
+import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
@@ -79,11 +80,22 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Conversation conve = document.toObject(Conversation.class);
-                            if (conversation.getUsers().get(0).getId().equals(conve.getUsers().get(0).getId())
-                                    && conversation.getUsers().get(1).getId().equals(conve.getUsers().get(1).getId())
-                            ) {
+
+                            for (IUser a : conversation.getUsers()) {
+                                User ua = (User) a;
+                                for (IUser b : conversation.getUsers()) {
+                                    User ub = (User) b;
+                                    if (ua.getId().equals(ub.getId())) {
+                                        conversationExists = true;
+                                        break;
+                                    } else {
+                                        conversationExists = false;
+                                    }
+                                }
+                            }
+
+                            if (conversationExists) {
                                 conversation.setId(conve.getId());
-                                conversationExists = true;
                                 break;
                             }
                         }
