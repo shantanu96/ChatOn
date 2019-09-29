@@ -1,6 +1,7 @@
 package dev.shantanu.com.chaton.data.entities;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
@@ -13,23 +14,25 @@ public class Conversation implements IDialog {
     private String dialogPhoto;
     private String dialogName;
     private List<User> users;
-    private Message lastMessage;
+    private Message lstMsg;
+    private IMessage lastMessage;
     private int unreadCount;
     private Date createdAt;
 
     @Override
     public String getId() {
-        return null;
+        return id;
     }
 
     @Override
     public String getDialogPhoto() {
-        return null;
+        return dialogPhoto;
     }
 
+    @Exclude
     @Override
     public String getDialogName() {
-        return null;
+        return dialogName;
     }
 
     @Override
@@ -37,14 +40,16 @@ public class Conversation implements IDialog {
         return users;
     }
 
+    @Exclude
     @Override
     public IMessage getLastMessage() {
         return lastMessage;
     }
 
+    @Exclude
     @Override
     public void setLastMessage(IMessage message) {
-        this.lastMessage =(Message)message;
+        this.lastMessage = message;
     }
 
     @Override
@@ -60,6 +65,7 @@ public class Conversation implements IDialog {
         this.dialogPhoto = dialogPhoto;
     }
 
+    @Exclude
     public void setDialogName(String dialogName) {
         this.dialogName = dialogName;
     }
@@ -78,5 +84,14 @@ public class Conversation implements IDialog {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Message getLstMsg() {
+        return lstMsg;
+    }
+
+    public void setLstMsg(Message lstMsg) {
+        this.lstMsg = lstMsg;
+        setLastMessage(lstMsg);
     }
 }

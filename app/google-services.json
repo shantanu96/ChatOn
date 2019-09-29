@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "957229211681-2ri2spb48hqvtvf1ebsnbsc9bb2r4l5l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.shantanu.com.chaton",
+            "certificate_hash": "5b3d3a899ddf3d0bee4ee7feb49caaf0f1959637"
+          }
+        },
+        {
           "client_id": "957229211681-5jlaoktdq88e3p5hecq89sfpd9kfglh6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

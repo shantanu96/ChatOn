@@ -17,6 +17,9 @@ public class Message implements IMessage, Serializable {
     @Exclude
     private User user;
 
+    public Message() {
+    }
+
     @Override
     public String getId() {
         return id;
