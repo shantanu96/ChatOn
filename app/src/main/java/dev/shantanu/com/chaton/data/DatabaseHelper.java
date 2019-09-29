@@ -29,11 +29,17 @@ public class DatabaseHelper {
     private static final String TAG = "DatabaseHelper";
 
     private FirebaseFirestore db;
+
     private Context mContext;
 
     public DatabaseHelper(Context context) {
         mContext = context;
         db = FirebaseFirestore.getInstance();
+    }
+
+    //Only for testing purpose
+    public DatabaseHelper(FirebaseFirestore firestore) {
+        db = firestore;
     }
 
     public List<User> getAllUsers(final List<User> userList, final ContactListAdapter contactListAdapter) {
@@ -64,35 +70,6 @@ public class DatabaseHelper {
         return userList;
     }
 
-    public List<Conversation> getAllConversations(final List<Conversation> conversationList, final ChatListAdapter conversationListAdapter) {
-        db.collection("conversations")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    String loggedInUser = Util.getUserInfoFromSession(mContext).getId();
-
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        conversationList.clear();
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                HashMap<String, String> participants = (HashMap<String, String>) document.get("participants");
-
-                                if (participants != null && participants.containsKey(loggedInUser)) {
-                                    Conversation c = new Conversation();
-                                    c.setId((String) document.getId());
-                                    c.setParticipants(participants);
-                                    conversationList.add(c);
-                                }
-                            }
-                            conversationListAdapter.notifyDataSetChanged();
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-
-                    }
-                });
-        return conversationList;
-    }
 
     public void addMessage(Message message) {
         db.collection("messages").document()
@@ -105,42 +82,15 @@ public class DatabaseHelper {
                 });
     }
 
-    public void addConversation(Conversation conversation, final String userId) {
-        final String conversationId = db.collection("conversations").document().getId();
-        db.collection("conversations").document(conversationId)
-                .set(conversation)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        db.collection("users").document(userId)
-                                .update("conversationIds", FieldValue.arrayUnion(conversationId));
-                        Log.d(TAG, "onSuccess: Conversation added successfully");
-                    }
-                });
-
-
-    }
-
     public Task<Void> addUser(User user) {
         String userId = db.collection("users").document().getId();
         user.setId(userId);
         return db.collection("users").document(userId).set(user);
     }
 
-
-    public Task<QuerySnapshot> checkConversationExists(final Conversation conversation, final String userId) {
-        return db.collection("conversations")
-                .get();
-    }
-
     //Every user has unique email id
     public Task<QuerySnapshot> checkIfUserExists(String emailId) {
         return db.collection("users").whereEqualTo("emailId", emailId).get();
-    }
-
-    public Task<QuerySnapshot> getConversationId(Conversation conversation) {
-        return db.collection("conversations")
-                .whereEqualTo("participants", conversation.getParticipants()).get();
     }
 
     public Task<DocumentSnapshot> getUser(final String id) {
@@ -158,4 +108,61 @@ public class DatabaseHelper {
                 .whereEqualTo("conversationId", conversationId)
                 .get();
     }
+
+    //Conversation methods
+    public void addConversation(Conversation conversation) {
+        final String conversationId = db.collection("conversations").document().getId();
+        db.collection("conversations").document(conversationId)
+                .set(conversation);
+//                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        db.collection("users").document(userId)
+//                                .update("conversationIds", FieldValue.arrayUnion(conversationId));
+//                        Log.d(TAG, "onSuccess: Conversation added successfully");
+//                    }
+//                });
+
+
+    }
+
+//    public Task<QuerySnapshot> checkConversationExists(final Conversation conversation, final String userId) {
+//        return db.collection("conversations")
+//                .get();
+//    }
+//
+//    public Task<QuerySnapshot> getConversationId(Conversation conversation) {
+//        return db.collection("conversations")
+//                .whereEqualTo("participants", conversation.getParticipants()).get();
+//    }
+//
+//    public List<Conversation> getAllConversations(final List<Conversation> conversationList, final ChatListAdapter conversationListAdapter) {
+//        db.collection("conversations")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    String loggedInUser = Util.getUserInfoFromSession(mContext).getId();
+//
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        conversationList.clear();
+//                        if (task.isSuccessful()) {
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                HashMap<String, String> participants = (HashMap<String, String>) document.get("participants");
+//
+//                                if (participants != null && participants.containsKey(loggedInUser)) {
+//                                    Conversation c = new Conversation();
+//                                    c.setId((String) document.getId());
+//                                    c.setParticipants(participants);
+//                                    conversationList.add(c);
+//                                }
+//                            }
+//                            conversationListAdapter.notifyDataSetChanged();
+//                        } else {
+//                            Log.w(TAG, "Error getting documents.", task.getException());
+//                        }
+//
+//                    }
+//                });
+//        return conversationList;
+//    }
 }

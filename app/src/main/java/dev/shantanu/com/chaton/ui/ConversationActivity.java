@@ -66,61 +66,61 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         particpants.put(otherUser.getId(), otherUser.getUserName());
 
         conversation = new Conversation();
-        conversation.setParticipants(particpants);
-        conversation.setCreatedTime(new Timestamp(new Date()));
+//        conversation.setParticipants(particpants);
+//        conversation.setCreatedTime(new Timestamp(new Date()));
 
         //checks if conversation exits otherwise add the conversation
-        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId())
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        boolean conversationExists = false;
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                HashMap<String, String> participants = (HashMap<String, String>) document.get("participants");
-                                if (participants != null && participants.equals(conversation.getParticipants())) {
-                                    conversationExists = true;
-                                    conversation.setId((String) document.getId());
-                                    break;
-                                }
-                            }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-
-                        //add conversation if does not exist
-                        if (!conversationExists) {
-                            databaseHelper.addConversation(conversation, currentUser.getId());
-                        } else {
-                            loadAllMessages();
-                        }
-                    }
-                });
-
-        messageInput.setInputListener(this);
+//        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId())
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        boolean conversationExists = false;
+//                        if (task.isSuccessful()) {
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                HashMap<String, String> participants = (HashMap<String, String>) document.get("participants");
+//                                if (participants != null && participants.equals(conversation.getParticipants())) {
+//                                    conversationExists = true;
+//                                    conversation.setId((String) document.getId());
+//                                    break;
+//                                }
+//                            }
+//                        } else {
+//                            Log.w(TAG, "Error getting documents.", task.getException());
+//                        }
+//
+//                        //add conversation if does not exist
+//                        if (!conversationExists) {
+//                            databaseHelper.addConversation(conversation, currentUser.getId());
+//                        } else {
+//                            loadAllMessages();
+//                        }
+//                    }
+//                });
+//
+//        messageInput.setInputListener(this);
     }
 
     @Override
     public boolean onSubmit(final CharSequence input) {
 
-        databaseHelper.getConversationId(conversation)
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        String conversationId = "";
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            conversationId = document.getId();
-                        }
-                        Message message = new Message();
-                        message.setConversationId(conversationId);
-                        message.setAuthor(currentUser.getId());
-                        message.setText(input.toString());
-                        message.setCreatedAt(new Date());
-                        message.setUser(currentUser);
-                        adapter.addToStart(message, false);
-                        databaseHelper.addMessage(message);
-                    }
-                });
+//        databaseHelper.getConversationId(conversation)
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        String conversationId = "";
+//                        for (QueryDocumentSnapshot document : task.getResult()) {
+//                            conversationId = document.getId();
+//                        }
+//                        Message message = new Message();
+//                        message.setConversationId(conversationId);
+//                        message.setAuthor(currentUser.getId());
+//                        message.setText(input.toString());
+//                        message.setCreatedAt(new Date());
+//                        message.setUser(currentUser);
+//                        adapter.addToStart(message, false);
+//                        databaseHelper.addMessage(message);
+//                    }
+//                });
         return true;
     }
 

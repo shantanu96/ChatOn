@@ -29,14 +29,12 @@ import dev.shantanu.com.chaton.data.entities.User;
 import dev.shantanu.com.chaton.ui.adapters.ChatListAdapter;
 import dev.shantanu.com.chaton.uitls.Util;
 
-public class MainActivity extends AppCompatActivity implements ChatListAdapter.ChatListItemListener {
+public class MainActivity extends AppCompatActivity{ //implements ChatListAdapter.ChatListItemListener {
 
     private final String TAG = getClass().getSimpleName();
 
-    private RecyclerView rvChatList;
-    private ChatListAdapter chatListAdapter;
+
     private DatabaseHelper databaseHelper;
-    private List<Conversation> conversationList;
     private FloatingActionButton floatingActionButton;
 
     private Gson gson;
@@ -52,16 +50,7 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
 
         databaseHelper = new DatabaseHelper(this);
 
-        rvChatList = findViewById(R.id.rv_chat_list);
 
-        conversationList = new ArrayList<>();
-        //send logged in userid to find other participant id in hashmap(improve the logic)
-        chatListAdapter = new ChatListAdapter(conversationList, this,
-                Util.getUserInfoFromSession(getApplicationContext()).getId());
-        databaseHelper.getAllConversations(conversationList, chatListAdapter);
-
-        rvChatList.setLayoutManager(new LinearLayoutManager(this));
-        rvChatList.setAdapter(chatListAdapter);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,34 +64,13 @@ public class MainActivity extends AppCompatActivity implements ChatListAdapter.C
     @Override
     protected void onResume() {
         super.onResume();
-        databaseHelper.getAllConversations(conversationList, chatListAdapter);
-    }
-
-    @Override
-    public void onClick(int pos, final String receiverUserId) {
-        Task<DocumentSnapshot> userDocument = databaseHelper.getUser(receiverUserId);
-        userDocument.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    User user = new User();
-                    user.setId(receiverUserId);
-                    user.setEmailId((String) document.get("emailId"));
-                    user.setUserName((String) document.get("userName"));
-
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("user", (Serializable) user);
-                    Intent intent = new Intent(MainActivity.this, ConversationActivity.class);
-                    intent.putExtra("bundle", bundle);
-                    startActivity(intent);
-                } else {
-                    Log.w(TAG, "Error getting documents.", task.getException());
-                }
-            }
-        });
 
     }
+
+//    @Override
+//    public void onClick(int pos, final String receiverUserId) {
+//
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
