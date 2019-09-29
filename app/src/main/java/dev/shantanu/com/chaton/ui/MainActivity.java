@@ -21,6 +21,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.dialogs.DialogsList;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
@@ -58,10 +59,10 @@ public class MainActivity extends AppCompatActivity {
         floatingActionButton = findViewById(R.id.floatingActionButton);
         dialogsList = findViewById(R.id.dialogsList);
 
-        dialogsListAdapter = new DialogsListAdapter(R.layout.activity_main, new ImageLoader() {
+        dialogsListAdapter = new DialogsListAdapter(new ImageLoader() {
             @Override
             public void loadImage(ImageView imageView, @Nullable String url, @Nullable Object payload) {
-
+//                Picasso.with(getApplicationContext()).load(url).into(imageView);
             }
         });
 
