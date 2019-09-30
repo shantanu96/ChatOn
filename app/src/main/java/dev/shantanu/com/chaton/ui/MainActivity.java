@@ -41,7 +41,7 @@ import dev.shantanu.com.chaton.uitls.Util;
 public class MainActivity extends AppCompatActivity implements DialogsListAdapter.OnDialogClickListener {
 
     private final String TAG = getClass().getSimpleName();
-    private final String DEFAULT_PROFILE_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/chaton-bb63b.appspot.com/o/default_profile_img.png?alt=media&token=bdd3d4cd-5885-409f-9ccb-4642bcd5bb58";
+
 
 
     private DatabaseHelper databaseHelper;
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
             @Override
             public void loadImage(ImageView imageView, @Nullable String url, @Nullable Object payload) {
                 if (url == null || url.isEmpty()) {
-                    Picasso.get().load(DEFAULT_PROFILE_IMAGE_URL).into(imageView);
+                    Picasso.get().load(Util.DEFAULT_PROFILE_IMAGE_URL).into(imageView);
                 } else {
                     Picasso.get().load(url).into(imageView);
                 }

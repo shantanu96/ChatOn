@@ -13,6 +13,7 @@ import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.entities.User;
 
 public class Util {
+    public static final String DEFAULT_PROFILE_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/chaton-bb63b.appspot.com/o/default_profile_img.png?alt=media&token=bdd3d4cd-5885-409f-9ccb-4642bcd5bb58";
 
     public static void saveUserInfoInSession(Context context, User user) {
         Gson gson = new Gson();

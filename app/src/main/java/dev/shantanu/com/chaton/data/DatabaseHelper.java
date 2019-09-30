@@ -122,4 +122,15 @@ public class DatabaseHelper {
         return db.collection("conversations")
                 .get();
     }
+
+    //Profile Methods
+    public Task<Void> updateUserName(String userId, String newUserName) {
+        return db.collection("users").document(userId)
+                .update("userName", newUserName);
+    }
+
+    public Task<Void> updateAvatar(String userId, String avatar) {
+        return db.collection("users").document(userId)
+                .update("avatar", avatar);
+    }
 }
