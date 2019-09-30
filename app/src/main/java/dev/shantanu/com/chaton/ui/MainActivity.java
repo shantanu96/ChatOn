@@ -212,10 +212,6 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
         // Create a new fragment and specify the fragment to show based on nav item clicked
 
         switch (menuItem.getItemId()) {
-            case R.id.nav_profile:
-                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                startActivity(intent);
-                break;
             case R.id.nav_logout:
                 Util.clearPreferneces(getApplicationContext());
                 Util.logout(getApplicationContext());
@@ -223,6 +219,10 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
                 i2.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i2);
                 finish();
+                break;
+            case R.id.nav_profile:
+                Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                startActivity(intent);
                 break;
             default:
 
