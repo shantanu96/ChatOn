@@ -81,20 +81,21 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Conversation conve = document.toObject(Conversation.class);
 
+                            ArrayList<Integer> matches = new ArrayList<>();
+
                             for (IUser a : conversation.getUsers()) {
                                 User ua = (User) a;
-                                for (IUser b : conversation.getUsers()) {
+                                for (IUser b : conve.getUsers()) {
                                     User ub = (User) b;
                                     if (ua.getId().equals(ub.getId())) {
-                                        conversationExists = true;
+                                        matches.add(1);
                                         break;
-                                    } else {
-                                        conversationExists = false;
                                     }
                                 }
                             }
 
-                            if (conversationExists) {
+                            if (matches.size() == 2) {
+                                conversationExists = true;
                                 conversation.setId(conve.getId());
                                 break;
                             }

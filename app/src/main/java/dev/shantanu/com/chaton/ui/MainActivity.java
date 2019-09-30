@@ -132,10 +132,9 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
                                     conversationList.add(conversation);
                                 }
                             }
-
-                            dialogsListAdapter.addItems(conversationList);
-                            dialogsListAdapter.notifyDataSetChanged();
                         }
+                        dialogsListAdapter.addItems(conversationList);
+                        dialogsListAdapter.notifyDataSetChanged();
                     }
                 });
     }
