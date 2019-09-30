@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.Conversation;
@@ -41,7 +42,6 @@ import dev.shantanu.com.chaton.uitls.Util;
 public class MainActivity extends AppCompatActivity implements DialogsListAdapter.OnDialogClickListener {
 
     private final String TAG = getClass().getSimpleName();
-
 
 
     private DatabaseHelper databaseHelper;
@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
         // Setup drawer view
         nvDrawer = findViewById(R.id.nvView);
         setupDrawerContent(nvDrawer);
+        setHeaderImageView();
     }
 
     private ActionBarDrawerToggle setupDrawerToggle() {
@@ -228,6 +229,18 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
 
         }
 
+
+    }
+
+    public void setHeaderImageView() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nvView);
+        View headerLayout = navigationView.inflateHeaderView(R.layout.nav_header);
+        CircleImageView ivHeaderPhoto = headerLayout.findViewById(R.id.nav_profile_img);
+        if (Util.getUserInfoFromSession(getApplicationContext()).getAvatar() == null) {
+            Picasso.get().load(R.drawable.app_icon).into(ivHeaderPhoto);
+        } else {
+            Picasso.get().load(Util.getUserInfoFromSession(getApplicationContext()).getAvatar()).into(ivHeaderPhoto);
+        }
 
     }
 
