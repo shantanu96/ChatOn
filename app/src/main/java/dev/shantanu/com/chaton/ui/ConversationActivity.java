@@ -9,6 +9,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
@@ -20,6 +24,8 @@ import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
@@ -111,6 +117,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                 });
 
         messageInput.setInputListener(this);
+        addNewMessages();
     }
 
     @Override
@@ -122,7 +129,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         message.setText(input.toString());
         message.setCreatedAt(new Date());
         message.setUser(currentUser);
-        adapter.addToStart(message, false);
+        adapter.addToStart(message, true);
         databaseHelper.addMessage(message)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -143,7 +150,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
     }
 
     public void loadAllMessages() {
-        databaseHelper.getMessagesByConversationId(conversation.getId())
+        databaseHelper.getAllMessages(conversation.getId())
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -166,5 +173,22 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                         adapter.addToEnd(messageList, true);
                     }
                 });
+    }
+
+    public void addNewMessages() {
+        FirebaseFirestore.getInstance().collection("messages").document().addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
+                if (document.getId() == conversation.getId() && document.get("author") != currentUser.getId()) {
+                    Message message = new Message();
+                    message.setId((String) document.getId());
+                    message.setAuthor((String) document.get("author"));
+                    message.setConversationId((String) document.get("conversationId"));
+                    message.setCreatedAt((Date) document.get("createdAt"));
+                    message.setText((String) document.get("text"));
+                    adapter.addToStart(message, true);
+                }
+            }
+        });
     }
 }

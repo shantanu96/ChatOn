@@ -21,12 +21,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
+
+import java.io.File;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dev.shantanu.com.chaton.R;
@@ -91,9 +96,15 @@ public class ProfileActivity extends AppCompatActivity {
     public void loadImageInProfileImage() {
         String avatar = user.getAvatar();
         if (avatar == null || avatar.isEmpty()) {
-            Picasso.get().load(Util.DEFAULT_PROFILE_IMAGE_URL).into(profileImage);
+            Glide.with(getApplicationContext())
+                    .load(Util.DEFAULT_PROFILE_IMAGE_URL)
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(profileImage);
         } else {
-            Picasso.get().load(avatar).into(profileImage);
+            Glide.with(getApplicationContext())
+                    .load(avatar)
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(profileImage);
         }
     }
 
@@ -146,23 +157,33 @@ public class ProfileActivity extends AppCompatActivity {
             final String picturePath = cursor.getString(columnIndex);
             cursor.close();
 
+            StorageReference mStorageReference = FirebaseStorage.getInstance().getReference();
+
             // Add image to storage
-            storageHelper.uploadFile(user.getId(), picturePath)
+            Uri file = Uri.fromFile(new File(picturePath));
+            final StorageReference storageReference = mStorageReference.child(user.getId());
+            storageReference.putFile(file)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             // Get a URL to the uploaded content
-                            final Uri downloadUrl = taskSnapshot.getUploadSessionUri();
-                            //Add image uri to firestore
-                            databaseHelper.updateAvatar(user.getId(), downloadUrl.toString())
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            user.setAvatar(downloadUrl.toString());
-                                            Util.saveUserInfoInSession(getApplicationContext(), user);
-                                            loadImageInProfileImage();
-                                        }
-                                    });
+                            storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(final Uri uri) {
+                                    //Add image uri to firestore
+                                    databaseHelper.updateAvatar(user.getId(), uri.toString())
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    user.setAvatar(uri.toString());
+                                                    Util.saveUserInfoInSession(getApplicationContext(), user);
+                                                    loadImageInProfileImage();
+                                                }
+                                            });
+                                }
+                            });
+
+
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override

@@ -99,7 +99,7 @@ public class DatabaseHelper {
         return db.collection("users").whereEqualTo("emailId", emailId).get();
     }
 
-    public Task<QuerySnapshot> getMessagesByConversationId(String conversationId) {
+    public Task<QuerySnapshot> getAllMessages(String conversationId) {
         return db.collection("messages").orderBy("createdAt", Query.Direction.ASCENDING)
                 .whereEqualTo("conversationId", conversationId)
                 .get();

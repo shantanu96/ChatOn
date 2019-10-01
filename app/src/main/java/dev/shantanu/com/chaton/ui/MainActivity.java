@@ -15,14 +15,16 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
-import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.dialogs.DialogsList;
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
     private Toolbar toolbar;
     private NavigationView nvDrawer;
     private ActionBarDrawerToggle drawerToggle;
+    private View headerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +71,13 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
             @Override
             public void loadImage(ImageView imageView, @Nullable String url, @Nullable Object payload) {
                 if (url == null || url.isEmpty()) {
-                    Picasso.get().load(Util.DEFAULT_PROFILE_IMAGE_URL).into(imageView);
+                    Glide.with(getApplicationContext())
+                            .load(Util.DEFAULT_PROFILE_IMAGE_URL)
+                            .into(imageView);
                 } else {
-                    Picasso.get().load(url).into(imageView);
+                    Glide.with(getApplicationContext())
+                            .load(url)
+                            .into(imageView);
                 }
 
             }
@@ -110,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
         // Setup drawer view
         nvDrawer = findViewById(R.id.nvView);
         setupDrawerContent(nvDrawer);
-        setHeaderImageView();
+        headerLayout = nvDrawer.inflateHeaderView(R.layout.nav_header);
     }
 
     private ActionBarDrawerToggle setupDrawerToggle() {
@@ -123,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
     protected void onResume() {
         super.onResume();
         loadConversations();
+        setHeaderImageView();
     }
 
     @Override
@@ -189,13 +197,21 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
     public void onDialogClick(IDialog dialog) {
         Conversation conversation = (Conversation) dialog;
         String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
-        User otherUser = conversation.getUsers().get(0).getId().equals(currentUserId) ?
+        User user = conversation.getUsers().get(0).getId().equals(currentUserId) ?
                 (User) conversation.getUsers().get(1) : (User) conversation.getUsers().get(0);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("otherUser", (Serializable) otherUser);
-        Intent intent = new Intent(this, ConversationActivity.class);
-        intent.putExtra("bundle", bundle);
-        startActivity(intent);
+        databaseHelper.getUser(user.getId())
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        User otherUser = task.getResult().toObject(User.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("otherUser", (Serializable) otherUser);
+                        Intent intent = new Intent(MainActivity.this, ConversationActivity.class);
+                        intent.putExtra("bundle", bundle);
+                        startActivity(intent);
+                    }
+                });
+
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -233,13 +249,17 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
     }
 
     public void setHeaderImageView() {
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nvView);
-        View headerLayout = navigationView.inflateHeaderView(R.layout.nav_header);
         CircleImageView ivHeaderPhoto = headerLayout.findViewById(R.id.nav_profile_img);
         if (Util.getUserInfoFromSession(getApplicationContext()).getAvatar() == null) {
-            Picasso.get().load(R.drawable.app_icon).into(ivHeaderPhoto);
+            Glide.with(getApplicationContext())
+                    .load(Util.DEFAULT_PROFILE_IMAGE_URL)
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(ivHeaderPhoto);
         } else {
-            Picasso.get().load(Util.getUserInfoFromSession(getApplicationContext()).getAvatar()).into(ivHeaderPhoto);
+            Glide.with(getApplicationContext())
+                    .load(Util.getUserInfoFromSession(getApplicationContext()).getAvatar())
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(ivHeaderPhoto);
         }
 
     }
