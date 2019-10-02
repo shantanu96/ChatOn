@@ -16,12 +16,12 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
-import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +46,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
     private Gson gson;
     private User currentUser, otherUser;
     private Conversation conversation;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         setContentView(R.layout.activity_conversation);
 
         databaseHelper = new DatabaseHelper(getApplicationContext());
+        db = FirebaseFirestore.getInstance();
         gson = new Gson();
 
         otherUser = (User) getIntent().getBundleExtra("bundle").getSerializable("otherUser");
@@ -67,13 +69,13 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         messageList.setAdapter(adapter);
 
 
-        List<User> userList = new ArrayList<>();
-        userList.add(currentUser);
-        userList.add(otherUser);
+        List<String> userIdList = new ArrayList<>();
+        userIdList.add(currentUser.getId());
+        userIdList.add(otherUser.getId());
 
         conversation = new Conversation();
         conversation.setDialogName(otherUser.getName());
-        conversation.setUsers(userList);
+        conversation.setParticipantsId(userIdList);
         conversation.setCreatedAt(new Date());
 
 
@@ -86,23 +88,13 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Conversation conve = document.toObject(Conversation.class);
+                            Collections.sort(conversation.getParticipantsId());
+                            Collections.sort(conve.getParticipantsId());
 
-                            ArrayList<Integer> matches = new ArrayList<>();
-
-                            for (IUser a : conversation.getUsers()) {
-                                User ua = (User) a;
-                                for (IUser b : conve.getUsers()) {
-                                    User ub = (User) b;
-                                    if (ua.getId().equals(ub.getId())) {
-                                        matches.add(1);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (matches.size() == 2) {
+                            if (conversation.getParticipantsId().equals(conve.getParticipantsId())) {
                                 conversationExists = true;
                                 conversation.setId(conve.getId());
+                                conversation.setLastMessageTime(new Date());
                                 break;
                             }
                         }
@@ -141,6 +133,8 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
 //                                        Log.d(TAG, "onComplete: Message added and conversation last message added successfully");
 //                                    }
 //                                });
+                        db.collection("conversations").document(conversation.getId())
+                                .update("lastMessageTime", new Date());
                         Log.d(TAG, "onComplete: Message added successfully");
                     }
                 });

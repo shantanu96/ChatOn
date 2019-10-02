@@ -18,13 +18,14 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.Gson;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.dialogs.DialogsList;
@@ -32,6 +33,7 @@ import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -51,18 +53,19 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
     private DialogsList dialogsList;
     private DialogsListAdapter dialogsListAdapter;
 
-    private Gson gson;
-
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
     private NavigationView nvDrawer;
     private ActionBarDrawerToggle drawerToggle;
     private View headerLayout;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        db = FirebaseFirestore.getInstance();
 
         floatingActionButton = findViewById(R.id.floatingActionButton);
         dialogsList = findViewById(R.id.dialogsList);
@@ -166,29 +169,42 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
 
     public void loadConversations() {
         dialogsListAdapter.clear();
-        databaseHelper.getAllConversations()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+
+        db.collection("users").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        List<Conversation> conversationList = new ArrayList<>();
-                        String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
-
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-
-                            if (task.getResult().size() != 0) {
-                                Conversation conversation = document.toObject(Conversation.class);
-                                User otherUser = conversation.getUsers().get(0).getId().equals(currentUserId) ?
-                                        (User) conversation.getUsers().get(1) : (User) conversation.getUsers().get(0);
-
-                                if (conversation.getUsers().get(0).getId().equals(currentUserId) ||
-                                        conversation.getUsers().get(1).getId().equals(currentUserId)) {
-                                    conversation.setDialogName(otherUser.getUserName());
-                                    conversationList.add(conversation);
-                                }
-                            }
+                    public void onSuccess(QuerySnapshot snapshot) {
+                        final HashMap<String, User> userList = new HashMap<>();
+                        for (User u : snapshot.toObjects(User.class)) {
+                            userList.put(u.getId(), u);
                         }
-                        dialogsListAdapter.addItems(conversationList);
-                        dialogsListAdapter.notifyDataSetChanged();
+                        db.collection("conversations")
+                                .whereArrayContains("participantsId", Util.getUserInfoFromSession(getApplicationContext()).getId())
+                                .get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot snapshot) {
+                                        final List<Conversation> conversationList = snapshot.toObjects(Conversation.class);
+                                        for (Conversation c : conversationList) {
+                                            String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
+                                            String otherUserId = c.getParticipantsId().get(0).equals(currentUserId) ?
+                                                    c.getParticipantsId().get(1) : c.getParticipantsId().get(0);
+
+                                            User currentUser = userList.get(currentUserId);
+                                            User otherUser = userList.get(otherUserId);
+
+                                            ArrayList<User> participantList = new ArrayList<>();
+                                            participantList.add(currentUser);
+                                            participantList.add(otherUser);
+
+                                            c.setUsers(participantList);
+                                            c.setDialogName(otherUser.getUserName());
+                                            c.setDialogPhoto(otherUser.getAvatar());
+                                        }
+                                        dialogsListAdapter.addItems(conversationList);
+                                        dialogsListAdapter.notifyDataSetChanged();
+                                    }
+                                });
                     }
                 });
     }

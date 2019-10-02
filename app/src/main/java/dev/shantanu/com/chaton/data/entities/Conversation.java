@@ -1,6 +1,5 @@
 package dev.shantanu.com.chaton.data.entities;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.commons.models.IMessage;
@@ -13,9 +12,12 @@ public class Conversation implements IDialog {
     private String id;
     private String dialogPhoto;
     private String dialogName;
+    @Exclude
     private List<User> users;
-    private Message lstMsg;
-    private IMessage lastMessage;
+    @Exclude
+    private Message lastMessage;
+    private Date lastMessageTime;
+    private List<String> participantsId;
     private int unreadCount;
     private Date createdAt;
 
@@ -24,9 +26,17 @@ public class Conversation implements IDialog {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @Override
     public String getDialogPhoto() {
         return dialogPhoto;
+    }
+
+    public void setDialogPhoto(String dialogPhoto) {
+        this.dialogPhoto = dialogPhoto;
     }
 
     @Exclude
@@ -35,43 +45,23 @@ public class Conversation implements IDialog {
         return dialogName;
     }
 
-    @Override
-    public List<? extends IUser> getUsers() {
-        return users;
-    }
-
-    @Exclude
-    @Override
-    public IMessage getLastMessage() {
-        return lastMessage;
-    }
-
-    @Exclude
-    @Override
-    public void setLastMessage(IMessage message) {
-        this.lastMessage = message;
-    }
-
-    @Override
-    public int getUnreadCount() {
-        return unreadCount;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setDialogPhoto(String dialogPhoto) {
-        this.dialogPhoto = dialogPhoto;
-    }
-
     @Exclude
     public void setDialogName(String dialogName) {
         this.dialogName = dialogName;
     }
 
+    @Override
+    public List<? extends IUser> getUsers() {
+        return users;
+    }
+
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    @Override
+    public int getUnreadCount() {
+        return unreadCount;
     }
 
     public void setUnreadCount(int unreadCount) {
@@ -86,12 +76,35 @@ public class Conversation implements IDialog {
         this.createdAt = createdAt;
     }
 
-    public Message getLstMsg() {
-        return lstMsg;
+    @Exclude
+    @Override
+    public Message getLastMessage() {
+        return lastMessage;
     }
 
-    public void setLstMsg(Message lstMsg) {
-        this.lstMsg = lstMsg;
-        setLastMessage(lstMsg);
+    @Exclude
+    @Override
+    public void setLastMessage(IMessage message) {
+        this.lastMessage = (Message) message;
+    }
+
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
+    public Date getLastMessageTime() {
+        return lastMessageTime;
+    }
+
+    public void setLastMessageTime(Date lastMessageTime) {
+        this.lastMessageTime = lastMessageTime;
+    }
+
+    public List<String> getParticipantsId() {
+        return participantsId;
+    }
+
+    public void setParticipantsId(List<String> participantsId) {
+        this.participantsId = participantsId;
     }
 }
