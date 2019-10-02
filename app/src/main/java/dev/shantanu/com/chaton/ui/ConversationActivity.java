@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -170,18 +170,38 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
     }
 
     public void addNewMessages() {
-        FirebaseFirestore.getInstance().collection("messages").document().addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        FirebaseFirestore.getInstance().collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
-                if (document.getId() == conversation.getId() && document.get("author") != currentUser.getId()) {
-                    Message message = new Message();
-                    message.setId((String) document.getId());
-                    message.setAuthor((String) document.get("author"));
-                    message.setConversationId((String) document.get("conversationId"));
-                    message.setCreatedAt((Date) document.get("createdAt"));
-                    message.setText((String) document.get("text"));
-                    adapter.addToStart(message, true);
+            public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e) {
+                for (DocumentChange dc : querySnapshot.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.ADDED) {
+                        if (dc.getDocument().get("conversationId").equals(conversation.getId()) && dc.getDocument().get("author").equals(otherUser.getId())) {
+                            Message message = new Message();
+                            message.setId((String) dc.getDocument().getId());
+                            message.setAuthor((String) dc.getDocument().get("author"));
+                            message.setConversationId((String) dc.getDocument().get("conversationId"));
+                            message.setCreatedAt((Date) dc.getDocument().get("createdAt"));
+                            message.setText((String) dc.getDocument().get("text"));
+                            message.setUser(otherUser);
+                            adapter.addToStart(message, true);
+                        }
+                    }
+//                for (DocumentSnapshot document:querySnapshot){
+//
+//                    if (document.get("conversationId").equals(conversation.getId()) && document.get("author").equals(otherUser.getId())) {
+//                        Message message = new Message();
+//                        message.setId((String) document.getId());
+//                        message.setAuthor((String) document.get("author"));
+//                        message.setConversationId((String) document.get("conversationId"));
+//                        message.setCreatedAt((Date) document.get("createdAt"));
+//                        message.setText((String) document.get("text"));
+//                        message.setUser(otherUser);
+//                        adapter.addToStart(message, true);
+//
+//                    }
+//                }
                 }
+                adapter.notifyDataSetChanged();
             }
         });
     }
