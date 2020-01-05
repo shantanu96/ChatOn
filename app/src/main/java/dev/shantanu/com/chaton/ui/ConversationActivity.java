@@ -126,37 +126,9 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
             }
         });
 
-//        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId())
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        boolean conversationExists = false;
-//
-//                        for (QueryDocumentSnapshot document : task.getResult()) {
-//                            Conversation conve = document.toObject(Conversation.class);
-//                            Collections.sort(conversation.getParticipantsId());
-//                            Collections.sort(conve.getParticipantsId());
-//
-//                            if (conversation.getParticipantsId().equals(conve.getParticipantsId())) {
-//                                conversationExists = true;
-//                                conversation.setId(conve.getId());
-//                                conversation.setLastMessageTime(new Date());
-//                                break;
-//                            }
-//                        }
-//
-//                        //add conversation if does not exist
-//                        if (!conversationExists) {
-//                            databaseHelper.addConversation(conversation);
-//                        } else {
-//                            loadAllMessages();
-//                        }
-//                    }
-//                });
-
         messageInput.setInputListener(this);
-        loadPastMessages();
-        loadNewMessages();
+//        loadPastMessages();
+        loadMessages();
     }
 
     @Override
@@ -168,7 +140,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         message.setText(input.toString());
         message.setCreatedAt(new Date());
         message.setUser(currentUser);
-        adapter.addToStart(message, true);
+//        adapter.addToStart(message, true);
         db.collection("conversations")
                 .document(conversation.getId())
                 .collection("messages")
@@ -208,29 +180,36 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                 });
     }
 
-    public void loadNewMessages() {
+    public void loadMessages() {
         db.collection("conversations")
                 .document(conversation.getId())
-                .collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e) {
-                for (DocumentChange dc : querySnapshot.getDocumentChanges()) {
-                    if (dc.getType() == DocumentChange.Type.MODIFIED) {
-                        if (dc.getDocument().get("conversationId").equals(conversation.getId()) && dc.getDocument().get("author").equals(otherUser.getId())) {
+                .collection("messages")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e) {
+                        for (DocumentChange dc : querySnapshot.getDocumentChanges()) {
+//                    if (dc.getType() == DocumentChange.Type.ADDED) {
+//                        if (dc.getDocument().get("conversationId").equals(conversation.getId()) && dc.getDocument().get("author").equals(otherUser.getId())) {
                             Message message = new Message();
                             message.setId(dc.getDocument().getId());
                             message.setAuthor((String) dc.getDocument().get("author"));
                             message.setConversationId((String) dc.getDocument().get("conversationId"));
                             message.setCreatedAt((Date) dc.getDocument().get("createdAt"));
                             message.setText((String) dc.getDocument().get("text"));
-                            message.setUser(otherUser);
+//                            message.setUser(otherUser);
+                            if (message.getAuthor().equals(currentUser.getId())) {
+                                message.setUser(currentUser);
+                            } else {
+                                message.setUser(otherUser);
+                            }
                             adapter.addToStart(message, true);
-                        }
-                    }
+//                        }
+//                    }
 
-                }
-                adapter.notifyDataSetChanged();
-            }
-        });
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+                });
     }
 }
