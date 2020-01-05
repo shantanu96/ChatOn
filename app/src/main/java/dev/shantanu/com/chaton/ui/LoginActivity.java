@@ -29,6 +29,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+
 import dev.shantanu.com.chaton.R;
 import dev.shantanu.com.chaton.data.DatabaseHelper;
 import dev.shantanu.com.chaton.data.entities.User;
@@ -197,6 +199,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     user.setId((String) document.getId());
                                                     user.setAvatar((String) document.get("avatar"));
                                                     user.setUserName((String) document.get("userName"));
+                                                    user.setConversationIds((ArrayList<String>) document.get("conversationIds"));
                                                 }
                                                 Util.saveUserInfoInSession(getApplicationContext(), user);
                                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);

@@ -12,6 +12,7 @@ public class User implements Serializable, IUser {
     private String emailId;
     private String password;
     private String avatar;
+    private List<String> conversationIds;
 
     public String getId() {
         return id;
@@ -58,5 +59,13 @@ public class User implements Serializable, IUser {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<String> getConversationIds() {
+        return conversationIds;
+    }
+
+    public void setConversationIds(List<String> conversationIds) {
+        this.conversationIds = conversationIds;
     }
 }

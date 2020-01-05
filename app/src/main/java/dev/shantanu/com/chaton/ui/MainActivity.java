@@ -2,6 +2,7 @@ package dev.shantanu.com.chaton.ui;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -24,17 +26,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IDialog;
+import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.dialogs.DialogsList;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import dev.shantanu.com.chaton.R;
@@ -169,44 +171,70 @@ public class MainActivity extends AppCompatActivity implements DialogsListAdapte
 
     public void loadConversations() {
         dialogsListAdapter.clear();
+        db.collection("conversations")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onSuccess(QuerySnapshot querySnapshot) {
+                final List<Conversation> conversationList = querySnapshot.toObjects(Conversation.class);
+                final List<Conversation> currentUserConversationList = new ArrayList<>();
+                for (Conversation c : conversationList) {
+                    if (Util.getUserInfoFromSession(getApplicationContext()).getConversationIds().contains(c.getId())) {
+                        final User currentUser = Util.getUserInfoFromSession(getApplicationContext());
+                        User otherUser = (User) c.getUsers().stream().filter(u -> !((User) u).getId().equals(currentUser.getId())).collect(Collectors.toList()).get(0);
 
-        db.collection("users").get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot snapshot) {
-                        final HashMap<String, User> userList = new HashMap<>();
-                        for (User u : snapshot.toObjects(User.class)) {
-                            userList.put(u.getId(), u);
-                        }
-                        db.collection("conversations")
-                                .whereArrayContains("participantsId", Util.getUserInfoFromSession(getApplicationContext()).getId())
-                                .get()
-                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onSuccess(QuerySnapshot snapshot) {
-                                        final List<Conversation> conversationList = snapshot.toObjects(Conversation.class);
-                                        for (Conversation c : conversationList) {
-                                            String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
-                                            String otherUserId = c.getParticipantsId().get(0).equals(currentUserId) ?
-                                                    c.getParticipantsId().get(1) : c.getParticipantsId().get(0);
+                        ArrayList<User> participantList = new ArrayList<>();
+                        participantList.add(currentUser);
+                        participantList.add(otherUser);
 
-                                            User currentUser = userList.get(currentUserId);
-                                            User otherUser = userList.get(otherUserId);
-
-                                            ArrayList<User> participantList = new ArrayList<>();
-                                            participantList.add(currentUser);
-                                            participantList.add(otherUser);
-
-                                            c.setUsers(participantList);
-                                            c.setDialogName(otherUser.getUserName());
-                                            c.setDialogPhoto(otherUser.getAvatar());
-                                        }
-                                        dialogsListAdapter.addItems(conversationList);
-                                        dialogsListAdapter.notifyDataSetChanged();
-                                    }
-                                });
+                        c.setUsers(participantList);
+                        c.setDialogName(otherUser.getUserName());
+                        c.setDialogPhoto(otherUser.getAvatar());
+                        currentUserConversationList.add(c);
                     }
-                });
+                }
+                dialogsListAdapter.addItems(currentUserConversationList);
+                dialogsListAdapter.notifyDataSetChanged();
+            }
+        });
+
+//        db.collection("users").get()
+//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onSuccess(QuerySnapshot snapshot) {
+//                        final HashMap<String, User> userList = new HashMap<>();
+//                        for (User u : snapshot.toObjects(User.class)) {
+//                            userList.put(u.getId(), u);
+//                        }
+//                        db.collection("conversations")
+//                                .whereArrayContains("participantsId", Util.getUserInfoFromSession(getApplicationContext()).getId())
+//                                .get()
+//                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                                    @Override
+//                                    public void onSuccess(QuerySnapshot snapshot) {
+//                                        final List<Conversation> conversationList = snapshot.toObjects(Conversation.class);
+//                                        for (Conversation c : conversationList) {
+//                                            String currentUserId = Util.getUserInfoFromSession(getApplicationContext()).getId();
+//                                            String otherUserId = c.getParticipantsId().get(0).equals(currentUserId) ?
+//                                                    c.getParticipantsId().get(1) : c.getParticipantsId().get(0);
+//
+//                                            User currentUser = userList.get(currentUserId);
+//                                            User otherUser = userList.get(otherUserId);
+//
+//                                            ArrayList<User> participantList = new ArrayList<>();
+//                                            participantList.add(currentUser);
+//                                            participantList.add(otherUser);
+//
+//                                            c.setUsers(participantList);
+//                                            c.setDialogName(otherUser.getUserName());
+//                                            c.setDialogPhoto(otherUser.getAvatar());
+//                                        }
+//                                        dialogsListAdapter.addItems(conversationList);
+//                                        dialogsListAdapter.notifyDataSetChanged();
+//                                    }
+//                                });
+//                    }
+//                });
     }
 
     @Override

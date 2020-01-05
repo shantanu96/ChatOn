@@ -8,20 +8,26 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.gson.Gson;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -74,42 +80,83 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         userIdList.add(otherUser.getId());
 
         conversation = new Conversation();
+        //check which user id is greater for generating consistent conversation id for same participants
+        if (currentUser.getId().compareTo(otherUser.getId()) > 0) {
+            conversation.setId(currentUser.getId() + otherUser.getId());
+        } else {
+            conversation.setId(otherUser.getId() + currentUser.getId());
+        }
+
         conversation.setDialogName(otherUser.getName());
-        conversation.setParticipantsId(userIdList);
+        conversation.setUsers(Arrays.asList(currentUser, otherUser));
+//        conversation.setParticipantsId(userIdList);
         conversation.setCreatedAt(new Date());
 
 
         //checks if conversation exits otherwise add the conversation
-        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId())
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        boolean conversationExists = false;
+        db.collection("conversations")
+                .document(currentUser.getId() + otherUser.getId())
+                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Conversation conve = document.toObject(Conversation.class);
-                            Collections.sort(conversation.getParticipantsId());
-                            Collections.sort(conve.getParticipantsId());
+                if (!documentSnapshot.exists()) {
+                    db.collection("conversations")
+                            .document(conversation.getId()).set(conversation)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    WriteBatch batch = db.batch();
 
-                            if (conversation.getParticipantsId().equals(conve.getParticipantsId())) {
-                                conversationExists = true;
-                                conversation.setId(conve.getId());
-                                conversation.setLastMessageTime(new Date());
-                                break;
-                            }
-                        }
+                                    DocumentReference cUser = db.collection("users").document(currentUser.getId());
+                                    batch.update(cUser, "conversationIds", FieldValue.arrayUnion(conversation.getId()));
 
-                        //add conversation if does not exist
-                        if (!conversationExists) {
-                            databaseHelper.addConversation(conversation);
-                        } else {
-                            loadAllMessages();
-                        }
-                    }
-                });
+                                    DocumentReference oUser = db.collection("users").document(otherUser.getId());
+                                    batch.update(oUser, "conversationIds", FieldValue.arrayUnion(conversation.getId()));
+
+                                    batch.commit().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(TAG, "onSuccess: batch commit");
+                                        }
+                                    });
+                                }
+                            });
+                }
+            }
+        });
+
+//        databaseHelper.checkConversationExists(conversation, Util.getUserInfoFromSession(getApplicationContext()).getId())
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        boolean conversationExists = false;
+//
+//                        for (QueryDocumentSnapshot document : task.getResult()) {
+//                            Conversation conve = document.toObject(Conversation.class);
+//                            Collections.sort(conversation.getParticipantsId());
+//                            Collections.sort(conve.getParticipantsId());
+//
+//                            if (conversation.getParticipantsId().equals(conve.getParticipantsId())) {
+//                                conversationExists = true;
+//                                conversation.setId(conve.getId());
+//                                conversation.setLastMessageTime(new Date());
+//                                break;
+//                            }
+//                        }
+//
+//                        //add conversation if does not exist
+//                        if (!conversationExists) {
+//                            databaseHelper.addConversation(conversation);
+//                        } else {
+//                            loadAllMessages();
+//                        }
+//                    }
+//                });
 
         messageInput.setInputListener(this);
-        addNewMessages();
+        loadPastMessages();
+        loadNewMessages();
     }
 
     @Override
@@ -122,29 +169,21 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
         message.setCreatedAt(new Date());
         message.setUser(currentUser);
         adapter.addToStart(message, true);
-        databaseHelper.addMessage(message)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-//                        databaseHelper.addLastMessageToConversation(message, conversation.getId())
-//                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                                    @Override
-//                                    public void onComplete(@NonNull Task<Void> task) {
-//                                        Log.d(TAG, "onComplete: Message added and conversation last message added successfully");
-//                                    }
-//                                });
-                        db.collection("conversations").document(conversation.getId())
-                                .update("lastMessageTime", new Date());
-                        Log.d(TAG, "onComplete: Message added successfully");
-                    }
-                });
-
+        db.collection("conversations")
+                .document(conversation.getId())
+                .collection("messages")
+                .document()
+                .set(message);
 
         return true;
     }
 
-    public void loadAllMessages() {
-        databaseHelper.getAllMessages(conversation.getId())
+    public void loadPastMessages() {
+        db.collection("conversations")
+                .document(conversation.getId())
+                .collection("messages")
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -169,15 +208,17 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                 });
     }
 
-    public void addNewMessages() {
-        FirebaseFirestore.getInstance().collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>() {
+    public void loadNewMessages() {
+        db.collection("conversations")
+                .document(conversation.getId())
+                .collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e) {
                 for (DocumentChange dc : querySnapshot.getDocumentChanges()) {
-                    if (dc.getType() == DocumentChange.Type.ADDED) {
+                    if (dc.getType() == DocumentChange.Type.MODIFIED) {
                         if (dc.getDocument().get("conversationId").equals(conversation.getId()) && dc.getDocument().get("author").equals(otherUser.getId())) {
                             Message message = new Message();
-                            message.setId((String) dc.getDocument().getId());
+                            message.setId(dc.getDocument().getId());
                             message.setAuthor((String) dc.getDocument().get("author"));
                             message.setConversationId((String) dc.getDocument().get("conversationId"));
                             message.setCreatedAt((Date) dc.getDocument().get("createdAt"));
@@ -186,20 +227,7 @@ public class ConversationActivity extends AppCompatActivity implements MessageIn
                             adapter.addToStart(message, true);
                         }
                     }
-//                for (DocumentSnapshot document:querySnapshot){
-//
-//                    if (document.get("conversationId").equals(conversation.getId()) && document.get("author").equals(otherUser.getId())) {
-//                        Message message = new Message();
-//                        message.setId((String) document.getId());
-//                        message.setAuthor((String) document.get("author"));
-//                        message.setConversationId((String) document.get("conversationId"));
-//                        message.setCreatedAt((Date) document.get("createdAt"));
-//                        message.setText((String) document.get("text"));
-//                        message.setUser(otherUser);
-//                        adapter.addToStart(message, true);
-//
-//                    }
-//                }
+
                 }
                 adapter.notifyDataSetChanged();
             }

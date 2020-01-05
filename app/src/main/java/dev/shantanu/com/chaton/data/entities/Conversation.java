@@ -17,7 +17,7 @@ public class Conversation implements IDialog {
     @Exclude
     private Message lastMessage;
     private Date lastMessageTime;
-    private List<String> participantsId;
+//    private List<String> participantsId;
     private int unreadCount;
     private Date createdAt;
 
@@ -100,11 +100,11 @@ public class Conversation implements IDialog {
         this.lastMessageTime = lastMessageTime;
     }
 
-    public List<String> getParticipantsId() {
-        return participantsId;
-    }
-
-    public void setParticipantsId(List<String> participantsId) {
-        this.participantsId = participantsId;
-    }
+//    public List<String> getParticipantsId() {
+//        return participantsId;
+//    }
+//
+//    public void setParticipantsId(List<String> participantsId) {
+//        this.participantsId = participantsId;
+//    }
 }
